@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  CITIZEN                 @map("Citizen")
+  AUTHORITY_ADMINISTRATOR @map("Authority Administrator")
+  VOLUNTEER               @map("Volunteer")
+  SHELTER_MANAGER         @map("Shelter Manager")
+}
+
+enum AccountStatus {
+  ACTIVE
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum DisasterType {
+  FLOOD      @map("Flood")
+  EARTHQUAKE @map("Earthquake")
+  FIRE       @map("Fire")
+  CYCLONE    @map("Cyclone")
+  LANDSLIDE  @map("Landslide")
+  OTHER      @map("Other")
+}
+
+enum IncidentSeverity {
+  LOW      @map("Low")
+  MEDIUM   @map("Medium")
+  HIGH     @map("High")
+  CRITICAL @map("Critical")
+}
+
+enum IncidentStatus {
+  REPORTED            @map("Reported")
+  UNDER_VERIFICATION  @map("Under Verification")
+  VERIFIED            @map("Verified")
+  RESPONSE_DISPATCHED @map("Response Dispatched")
+  RESOLVED            @map("Resolved")
+  REJECTED            @map("Rejected")
+}
+
+model User {
+  id                         String        @id @default(cuid())
+  name                       String
+  email                      String        @unique
+  passwordHash               String
+  role                       UserRole
+  requestedRole              UserRole?
+  accountStatus              AccountStatus @default(ACTIVE)
+  applicationSubmittedAt     DateTime?
+  applicationReviewedAt      DateTime?
+  applicationReviewedById    String?
+  applicationRejectionReason String?       @db.Text
+  phone                      String?
+  address                    String?
+  createdAt                  DateTime      @default(now())
+  updatedAt                  DateTime      @updatedAt
+  incidents                  Incident[]
+  applicationReviewedBy      User?         @relation("ApplicationReviewer", fields: [applicationReviewedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  applicationsReviewed       User[]        @relation("ApplicationReviewer")
+
+  @@index([role])
+  @@index([accountStatus, applicationSubmittedAt])
+  @@index([applicationReviewedById])
+}
+
+model Incident {
+  id          String           @id @default(cuid())
+  type        DisasterType
+  description String           @db.Text
+  location    String
+  lat         Float?
+  lng         Float?
+  severity    IncidentSeverity
+  status      IncidentStatus   @default(REPORTED)
+  affected    Int              @default(0)
+  reporterId  String
+  reportedAt  DateTime         @default(now())
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  reporter    User             @relation(fields: [reporterId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([reporterId])
+  @@index([status, reportedAt])
+  @@index([severity])
+}
