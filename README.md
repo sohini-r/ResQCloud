@@ -37,7 +37,7 @@ For a deployed frontend, set `VITE_API_BASE_URL` to the deployed backend API bas
 
 Prisma is configured under `server/prisma` and reads `DATABASE_URL` from `server/.env`. Before checking the connection, replace `REPLACE_WITH_LOCAL_PASSWORD` in that local, Git-ignored file with your PostgreSQL password. Do not share or commit the password. From a terminal in `server`, run `npm run db:check` for a read-only `SELECT 1` connection check. The `User` and `Incident` tables are managed by the migration in `server/prisma/migrations`.
 
-## AWS deployment preparation (not deployed)
+## AWS deployment preparation 
 
 The Express backend is prepared to listen on `process.env.PORT` (default `5000`). In production it binds to `0.0.0.0` unless `HOST` is explicitly set. Local development retains IPv4 and IPv6 loopback listeners. Backend startup validates its PostgreSQL URL, requires a JWT secret of at least 32 bytes, and requires an explicit production CORS allowlist. Helmet adds standard HTTP security headers. Unhandled API errors return a generic message; server logs record only an error code/name, not request credentials or connection strings.
 
